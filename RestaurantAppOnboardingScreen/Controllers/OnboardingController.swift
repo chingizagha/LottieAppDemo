@@ -25,8 +25,8 @@ class OnboardingController: UIViewController {
     
     let pageControl: UIPageControl = {
         let control = UIPageControl()
-        control.pageIndicatorTintColor = .lightGray
-        control.currentPageIndicatorTintColor = .darkGray
+        control.pageIndicatorTintColor = .darkGray
+        control.currentPageIndicatorTintColor = .lightGray
         control.translatesAutoresizingMaskIntoConstraints = false
         return control
     }()
@@ -56,7 +56,7 @@ class OnboardingController: UIViewController {
     
     private func setUpPageControl(){
         pageControl.numberOfPages = slides.count
-        let angle = CGFloat.pi / 2
+        let angle = CGFloat.pi
         pageControl.transform = CGAffineTransform(rotationAngle: angle)
     }
     
@@ -67,12 +67,13 @@ class OnboardingController: UIViewController {
             collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            pageControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 25),
-            pageControl.rightAnchor.constraint(equalTo: view.rightAnchor)
+            pageControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -115),
+            pageControl.rightAnchor.constraint(equalTo: view.rightAnchor),
+            pageControl.leftAnchor.constraint(equalTo: view.leftAnchor)
         ])
     }
     
-    private func handleActionButtonTap(at indexPath: IndexPath) {
+    private func handleNextButtonTap(at indexPath: IndexPath) {
         if indexPath.item == slides.count - 1 {
             let vc = MainViewController()
             vc.modalPresentationStyle = .fullScreen
@@ -84,6 +85,10 @@ class OnboardingController: UIViewController {
             collectionView.scrollToItem(at: nextIndexPath, at: .top, animated: true)
             pageControl.currentPage = nextItem
         }
+    }
+    
+    private func handleSkipButtonTap(){
+        /// UserDefault make isFirstTime = false
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -104,8 +109,11 @@ extension OnboardingController: UICollectionViewDelegate, UICollectionViewDataSo
         cell.backgroundColor = .systemBackground
         let slide = slides[indexPath.row]
         cell.configure(with: slide)
-        cell.actionButtonDidTap = { [weak self] in
-            self?.handleActionButtonTap(at: indexPath)
+        cell.nextButtonDidTap = { [weak self] in
+            self?.handleNextButtonTap(at: indexPath)
+        }
+        cell.skipButtonDidTap = { [weak self] in
+            self?.handleSkipButtonTap()
         }
         return cell
     }

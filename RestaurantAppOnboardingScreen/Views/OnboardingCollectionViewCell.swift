@@ -13,7 +13,8 @@ class OnboardingCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "OnboardingCollectionViewCell"
     
-    var actionButtonDidTap: (() -> Void)?
+    var nextButtonDidTap: (() -> Void)?
+    var skipButtonDidTap: (() -> Void)?
     
     private var uiView: LottieAnimationView = {
         let view = LottieAnimationView()
@@ -34,7 +35,17 @@ class OnboardingCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let button: UIButton = {
+    private let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fillEqually
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
+    }()
+    
+    private let nextButton: UIButton = {
         let button = UIButton()
         button.setTitle("Get Started", for: .normal)
         button.backgroundColor = .systemBlue
@@ -43,10 +54,22 @@ class OnboardingCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    private let skipButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Skip", for: .normal)
+        button.backgroundColor = .systemBlue
+        button.titleLabel?.font = .systemFont(ofSize: 24, weight: .bold)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.addSubviews(uiView, label, button)
-        button.addTarget(self, action: #selector(didTapNext), for: .touchUpInside)
+        stackView.addArrangedSubview(nextButton)
+        stackView.addArrangedSubview(skipButton)
+        contentView.addSubviews(uiView, label, stackView)
+        nextButton.addTarget(self, action: #selector(didTapNext), for: .touchUpInside)
+        skipButton.addTarget(self, action: #selector(didTapSkip), for: .touchUpInside)
         addConstraints()
     }
     
@@ -56,7 +79,12 @@ class OnboardingCollectionViewCell: UICollectionViewCell {
     
     @objc
     private func didTapNext(){
-        actionButtonDidTap?()
+        nextButtonDidTap?()
+    }
+    
+    @objc
+    private func didTapSkip(){
+        skipButtonDidTap?()
     }
     
     private func addConstraints(){
@@ -71,16 +99,17 @@ class OnboardingCollectionViewCell: UICollectionViewCell {
             label.rightAnchor.constraint(equalTo: contentView.rightAnchor),
             label.leftAnchor.constraint(equalTo: contentView.leftAnchor),
             
-            button.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 20),
-            button.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -65),
-            button.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 65),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -70),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            stackView.heightAnchor.constraint(equalToConstant: 50),
         ])
     }
     
     public func configure(with slide: Slide) {
         label.text = slide.title
-        button.setTitle(slide.buttonTitle, for: .normal)
-        button.backgroundColor = slide.buttonColor
+        nextButton.setTitle(slide.buttonTitle, for: .normal)
+        nextButton.backgroundColor = slide.buttonColor
         uiView.animation = LottieAnimation.named(slide.animationName)
         uiView.loopMode = .loop
         if !uiView.isAnimationPlaying {
